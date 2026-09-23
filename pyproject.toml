@@ -1,0 +1,17 @@
+[project]
+name = "zain-hackathon-entry"
+version = "0.1.0"
+description = "An entry to Zain's hackathon"
+readme = "README.md"
+authors = [
+    { name = "Eyad Jawad", email = "ayadmansr@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+app = "zain_hackathon_entry:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
