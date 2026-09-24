@@ -1,14 +1,15 @@
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import uuid4
-from datetime import datetime, UTC, timedelta
+
+from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .. import Base
 
-from sqlalchemy import ForeignKey, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 if TYPE_CHECKING:
     from .users import User
+
 
 class AccessToken(Base):
     __tablename__ = "access_tokens"
@@ -19,6 +20,6 @@ class AccessToken(Base):
     token: Mapped[str] = mapped_column(default=lambda: str(uuid4()), index=True)
     expiration_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        nullable=False, 
+        nullable=False,
         default=lambda: datetime.now(UTC) + timedelta(days=5),
     )

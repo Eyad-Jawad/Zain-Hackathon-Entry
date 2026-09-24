@@ -1,12 +1,11 @@
 from datetime import datetime
-from typing_extensions import Self
-from typing import Annotated
+from typing import Annotated, Self
 
-from pydantic import BaseModel, AfterValidator, ConfigDict, model_validator, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 
-def luhn_validation(number: int) -> bool:
-    num = [int (n) for n in str(number)]
+def luhn_validation(number: int) -> int:
+    num = [int(n) for n in str(number)]
 
     if not (12 <= len(num) <= 19):
         raise ValueError("Invalid card number, please check again.")
@@ -35,17 +34,14 @@ class UserRequest(BaseModel):
 
     @model_validator(mode="after")
     def is_all_none(self) -> Self:
-        if (
-            not self.id and
-            not self.name and
-            not self.card_number
-        ):
+        if not self.id and not self.name and not self.card_number:
             raise ValueError(
                 "All values are None. You have to provide at least one value"
             )
 
         return self
-    
+
+
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -59,14 +55,17 @@ class BaseTransaction(BaseModel):
     sender_id: int
     receiver_id: int
 
+
 class TransactionReqeust(BaseTransaction):
     pass
+
 
 class TransactionResponse(BaseTransaction):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     date: datetime
+
 
 class BaseAuth(BaseModel):
     username: str = Field(min_length=1, max_length=16)
@@ -76,8 +75,10 @@ class BaseAuth(BaseModel):
 class LogInRequest(BaseAuth):
     pass
 
+
 class DeleteAccountRequest(BaseAuth):
     pass
+
 
 class SignUpRequest(BaseAuth):
     card_number: Annotated[int, AfterValidator(luhn_validation)]

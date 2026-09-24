@@ -1,8 +1,8 @@
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
 
 
 class Base(DeclarativeBase):
@@ -15,6 +15,7 @@ db_url = f"sqlite+aiosqlite:///{db_path}"
 
 engine = create_async_engine(db_url)
 SessionLocal = async_sessionmaker(bind=engine)
+
 
 async def init_db():
     from . import models as models

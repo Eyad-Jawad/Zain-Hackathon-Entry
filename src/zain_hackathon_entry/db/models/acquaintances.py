@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING
 
-from .. import Base
-
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .. import Base
+
 if TYPE_CHECKING:
     from .users import User
+
 
 class Acquaintance(Base):
     __tablename__ = "acquaintances"

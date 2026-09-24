@@ -2,26 +2,14 @@
 # TODO: Make get_users_by_name use fuzzy search
 # TODO: make the errors enum
 # TODO: Make logging in logic
-# TODO: Put utc back in auth token validation 
+# TODO: Put utc back in auth token validation
 
-from typing import Annotated
 from contextlib import asynccontextmanager
 
-from zain_hackathon_entry.db import init_db, get_session
-from zain_hackathon_entry.db.quries import (
-    get_users,
-    get_user_by_name,
-    get_user_by_card_number,
-    get_user_by_id,
-)
-from zain_hackathon_entry.error_strings import Errors
+from fastapi import FastAPI
+
 from zain_hackathon_entry import auth
-
-from zain_hackathon_entry.schemas import UserRequest, UserResponse
-
-from fastapi import FastAPI, Request, Depends, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
+from zain_hackathon_entry.db import init_db
 
 
 @asynccontextmanager
@@ -46,5 +34,3 @@ app = FastAPI(lifespan=lifespan)
 # )
 
 app.include_router(auth.router, tags=["auth"])
-
-

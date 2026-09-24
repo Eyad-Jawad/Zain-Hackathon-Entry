@@ -1,18 +1,5 @@
+from datetime import datetime
 from typing import Annotated
-from datetime import datetime, UTC
-
-from zain_hackathon_entry.schemas import LogInRequest, SignUpRequest, AccessTokenResponse, DeleteAccountRequest
-from zain_hackathon_entry.db.quries import (
-    get_user_by_name,
-    get_user_by_card_number,
-    add_user,
-    create_access_token,
-    get_token,
-    revoke_access_token,
-    delete_user,
-)
-from zain_hackathon_entry.db import get_session
-from zain_hackathon_entry.db.models import User
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -20,23 +7,43 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from zain_hackathon_entry.db import get_session
+from zain_hackathon_entry.db.models import AccessToken
+from zain_hackathon_entry.db.quries import (
+    add_user,
+    create_access_token,
+    delete_user,
+    get_token,
+    get_user_by_card_number,
+    get_user_by_name,
+    revoke_access_token,
+)
+from zain_hackathon_entry.schemas import (
+    AccessTokenResponse,
+    DeleteAccountRequest,
+    LogInRequest,
+    SignUpRequest,
+)
+
 router = APIRouter()
 ph = PasswordHasher()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/log_in")
 
-async def validate_token_and_get_token(session: AsyncSession, token: str) -> User:
+
+async def validate_token_and_get_token(
+    session: AsyncSession, token: str
+) -> AccessToken:
     access_token = await get_token(session, token)
 
     if access_token is None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid access token."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid access token."
         )
 
     if access_token.expiration_date < datetime.now():
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Expired session. Please log in again."
+            detail="Expired session. Please log in again.",
         )
 
     return access_token
@@ -56,12 +63,18 @@ async def verify_unique_card_number(session: AsyncSession, card_number: int) -> 
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Card number already used. Please try to log in."
+            detail="Card number already used. Please try to log in.",
         )
 
 
-@router.post("/api/sign_up", response_model=AccessTokenResponse, status_code=status.HTTP_201_CREATED)
-async def sign_up(creds: SignUpRequest, session: Annotated[AsyncSession, Depends(get_session)]):
+@router.post(
+    "/api/sign_up",
+    response_model=AccessTokenResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def sign_up(
+    creds: SignUpRequest, session: Annotated[AsyncSession, Depends(get_session)]
+):
     await verify_unqiue_username(session, creds.username)
     await verify_unique_card_number(session, creds.card_number)
 
@@ -79,13 +92,19 @@ async def sign_up(creds: SignUpRequest, session: Annotated[AsyncSession, Depends
     return await create_access_token(session, user)
 
 
-@router.post("/api/log_in", response_model=AccessTokenResponse, status_code=status.HTTP_202_ACCEPTED)
-async def log_in(creds: LogInRequest, session: Annotated[AsyncSession, Depends(get_session)]):
+@router.post(
+    "/api/log_in",
+    response_model=AccessTokenResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def log_in(
+    creds: LogInRequest, session: Annotated[AsyncSession, Depends(get_session)]
+):
     user = await get_user_by_name(session, creds.username)
     if user is None or not verify_password(creds.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Invalid username or password. Please try again."
+            detail="Invalid username or password. Please try again.",
         )
 
     return await create_access_token(session, user)
@@ -93,7 +112,7 @@ async def log_in(creds: LogInRequest, session: Annotated[AsyncSession, Depends(g
 
 @router.delete("/api/log_out", status_code=status.HTTP_200_OK)
 async def log_out(
-    token: Annotated[str, Depends(oauth2_scheme)], 
+    token: Annotated[str, Depends(oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     access_token = await validate_token_and_get_token(session, token)
@@ -103,12 +122,14 @@ async def log_out(
 
 
 @router.delete("/api/delete_account", status_code=status.HTTP_200_OK)
-async def delete_account(creds: DeleteAccountRequest, session: Annotated[AsyncSession, Depends(get_session)]):
+async def delete_account(
+    creds: DeleteAccountRequest, session: Annotated[AsyncSession, Depends(get_session)]
+):
     user = await get_user_by_name(session, creds.username)
     if user is None or not verify_password(creds.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Invalid username or password. Please try again."
+            detail="Invalid username or password. Please try again.",
         )
 
     await delete_user(session, user)

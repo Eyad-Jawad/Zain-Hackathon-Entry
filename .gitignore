@@ -9,5 +9,11 @@ wheels/
 # Virtual environments
 .venv
 
+# Database files
 app.db
 *.db
+
+# Tool generated files
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/

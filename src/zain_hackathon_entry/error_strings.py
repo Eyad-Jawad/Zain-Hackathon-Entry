@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Errors(str, Enum):
     DATABASE_IS_EMPTY_POPULATION_NEEDED = "DATABASE_IS_EMPTY_POPULATION_NEEDED"
     THERE_IS_NO_USER = "THERE_IS_NO_USER"
