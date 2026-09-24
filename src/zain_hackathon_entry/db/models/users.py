@@ -24,12 +24,27 @@ class User(Base):
 
     card_token: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
     balance: Mapped[int] = mapped_column(default=0)
+
     acquaintances: Mapped[list["Acquaintance"]] = relationship(
-        back_populates="user", cascade="all, delete"
+        back_populates="user",
+        foreign_keys="Acquaintance.user_id",
+        cascade="all, delete",
     )
-    transactions: Mapped[list["Transaction"]] = relationship(
-        back_populates="user", cascade="all, delete"
+    acquaintanced_by: Mapped[list["Acquaintance"]] = relationship(
+        back_populates="user",
+        foreign_keys="Acquaintance.acquaintance_id",
+        cascade="all, delete",
     )
+
+    sent_transactions: Mapped[list["Transaction"]] = relationship(
+        back_populates="sender",
+        foreign_keys="Transaction.sender_id",
+    )
+    recieved_transactions: Mapped[list["Transaction"]] = relationship(
+        back_populates="receiver",
+        foreign_keys="Transaction.receiver_id",
+    )
+
     pending_requests: Mapped[list["PendingRequest"]] = relationship(
         back_populates="user", cascade="all, delete"
     )

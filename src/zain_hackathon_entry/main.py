@@ -1,15 +1,13 @@
-# TODO: Make an acquaintances table
 # TODO: Make get_users_by_name use fuzzy search
 # TODO: make the errors enum
 # TODO: Make logging in logic
-# TODO: Put utc back in auth token validation
-# TODO: Make delete account take and verify card stuff
+# TODO: Put utc back in auth token validation, and confirmation
 
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from zain_hackathon_entry import auth
+from zain_hackathon_entry import auth, transferring_system
 from zain_hackathon_entry.db import init_db
 
 
@@ -35,3 +33,4 @@ app = FastAPI(lifespan=lifespan)
 # )
 
 app.include_router(auth.router, tags=["auth"])
+app.include_router(transferring_system.router, tags=["transfer"])

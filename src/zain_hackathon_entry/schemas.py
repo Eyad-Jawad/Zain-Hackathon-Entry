@@ -1,7 +1,7 @@
-from typing import Annotated
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, AfterValidator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 
 class BaseTransaction(BaseModel):
@@ -23,11 +23,13 @@ class TransactionResponse(BaseTransaction):
 
 def username_validator(username: str) -> str:
     if not (2 < len(username) < 17):
-        raise ValueError("Username length must be less than 17 and more than 2 characters.")
+        raise ValueError(
+            "Username length must be less than 17 and more than 2 characters."
+        )
 
     if not username.isascii():
         raise ValueError("Username must containt ASCII characters only.")
-    
+
     if " " in username:
         raise ValueError("Username must not containt spaces.")
 

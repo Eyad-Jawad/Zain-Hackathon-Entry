@@ -15,12 +15,19 @@ class Transaction(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     amount: Mapped[int] = mapped_column(nullable=False)
+
     sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    receiver_id: Mapped[int] = mapped_column(
-        ForeignKey("acquaintances.id"), nullable=False
+    sender: Mapped["User"] = relationship(
+        back_populates="sent_transactions",
+        foreign_keys=[sender_id],
     )
+
+    receiver_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    receiver: Mapped["User"] = relationship(
+        back_populates="recieved_transactions",
+        foreign_keys=[receiver_id],
+    )
+
     date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
-
-    user: Mapped["User"] = relationship(back_populates="transactions")

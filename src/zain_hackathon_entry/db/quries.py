@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from zain_hackathon_entry.schemas import AccessTokenResponse
 
-from .models import AccessToken, User
+from .models import AccessToken, PendingRequest, Transaction, User
 
 
 async def get_users(session: AsyncSession) -> list[User]:
@@ -24,9 +24,7 @@ async def get_user_by_name(session: AsyncSession, name: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_card_token(
-    session: AsyncSession, card_token: str
-) -> User | None:
+async def get_user_by_card_token(session: AsyncSession, card_token: str) -> User | None:
     result = await session.execute(select(User).where(User.card_token == card_token))
 
     return result.scalar_one_or_none()
@@ -72,4 +70,56 @@ async def revoke_access_token(session: AsyncSession, access_token: AccessToken) 
 
 async def delete_user(session: AsyncSession, user: User):
     await session.delete(user)
+    await session.flush()
+
+
+async def add_transaction(
+    session: AsyncSession, sender: User, reciever: User, amount: int
+) -> Transaction:
+    transaction = Transaction(sender=sender, reciever=reciever, amount=amount)
+
+    session.add(transaction)
+    await session.flush()
+
+    return transaction
+
+
+async def add_pending_transaction(
+    sesison: AsyncSession, transaction: Transaction
+) -> PendingRequest:
+    pending_request = PendingRequest(user=transaction.sender, request_id=transaction.id)
+
+    sesison.add(pending_request)
+    await sesison.flush()
+
+    return pending_request
+
+
+async def get_pending_request(session: AsyncSession, id: int) -> PendingRequest | None:
+    result = await session.execute(
+        select(PendingRequest).where(PendingRequest.request_id == id)
+    )
+
+    return result.scalar_one_or_none()
+
+
+async def get_transaction(session: AsyncSession, id: int) -> Transaction | None:
+    result = await session.execute(select(Transaction).where(Transaction.id == id))
+
+    return result.scalar_one_or_none()
+
+
+async def transfer_balance(
+    session: AsyncSession, sender: User, reciever: User, amount
+) -> None:
+    sender.balance -= amount
+    reciever.balance += amount
+
+    await session.flush()
+
+
+async def delete_pending_reqest(
+    session: AsyncSession, pending_request: PendingRequest
+) -> None:
+    await session.delete(pending_request)
     await session.flush()

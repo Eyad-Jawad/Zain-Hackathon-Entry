@@ -13,10 +13,13 @@ if TYPE_CHECKING:
 class PendingRequest(Base):
     __tablename__ = "pending_requests"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user: Mapped["User"] = relationship(back_populates="pending_requests")
+    request_id: Mapped[int] = mapped_column(
+        ForeignKey("transactions.id"), primary_key=True
+    )
+
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    request: Mapped[str]
+    user: Mapped["User"] = relationship(back_populates="pending_requests")
+
     date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

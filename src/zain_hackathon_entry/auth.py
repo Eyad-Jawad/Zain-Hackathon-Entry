@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from zain_hackathon_entry.db import get_session
-from zain_hackathon_entry.db.models import AccessToken
+from zain_hackathon_entry.db.models import AccessToken, User
 from zain_hackathon_entry.db.quries import (
     add_user,
     create_access_token,
@@ -30,9 +30,7 @@ ph = PasswordHasher()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/log_in")
 
 
-async def validate_token_and_get_token(
-    session: AsyncSession, token: str
-) -> AccessToken:
+async def validate_and_get_token(session: AsyncSession, token: str) -> AccessToken:
     access_token = await get_token(session, token)
 
     if access_token is None:
@@ -47,6 +45,15 @@ async def validate_token_and_get_token(
         )
 
     return access_token
+
+
+async def get_current_user(
+    session: Annotated[AsyncSession, get_session],
+    token: Annotated[str, oauth2_scheme],
+) -> User:
+    access_token = await validate_and_get_token(session, token)
+
+    return access_token.user
 
 
 async def verify_unqiue_username(session: AsyncSession, username: str) -> None:
@@ -115,7 +122,7 @@ async def log_out(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
-    access_token = await validate_token_and_get_token(session, token)
+    access_token = await validate_and_get_token(session, token)
     await revoke_access_token(session, access_token)
 
     return {"logged_out": True}
