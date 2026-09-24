@@ -22,7 +22,8 @@ class User(Base):
         back_populates="user", cascade="all, delete"
     )
 
-    card_number: Mapped[int] = mapped_column(unique=True, nullable=False, index=True)
+    card_token: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+    balance: Mapped[int] = mapped_column(default=0)
     acquaintances: Mapped[list["Acquaintance"]] = relationship(
         back_populates="user", cascade="all, delete"
     )

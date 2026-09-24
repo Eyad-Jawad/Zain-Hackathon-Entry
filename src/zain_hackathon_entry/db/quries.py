@@ -24,21 +24,21 @@ async def get_user_by_name(session: AsyncSession, name: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_card_number(
-    session: AsyncSession, card_number: int
+async def get_user_by_card_token(
+    session: AsyncSession, card_token: str
 ) -> User | None:
-    result = await session.execute(select(User).where(User.card_number == card_number))
+    result = await session.execute(select(User).where(User.card_token == card_token))
 
     return result.scalar_one_or_none()
 
 
 async def add_user(
-    session: AsyncSession, username: str, password_hash: str, card_number: int
+    session: AsyncSession, username: str, password_hash: str, card_token: str
 ) -> User:
     user = User(
         username=username,
         password_hash=password_hash,
-        card_number=card_number,
+        card_token=card_token,
     )
 
     session.add(user)

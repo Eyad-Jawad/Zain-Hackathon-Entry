@@ -3,6 +3,7 @@
 # TODO: make the errors enum
 # TODO: Make logging in logic
 # TODO: Put utc back in auth token validation
+# TODO: Make delete account take and verify card stuff
 
 from contextlib import asynccontextmanager
 

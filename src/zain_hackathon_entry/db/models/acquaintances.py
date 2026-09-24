@@ -16,5 +16,4 @@ class Acquaintance(Base):
     user: Mapped["User"] = relationship(back_populates="acquaintances")
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     acquaintance_name: Mapped[str | None]
-    acquaintance_card_number: Mapped[int]
     notes_on_acquaintance: Mapped[str | None]

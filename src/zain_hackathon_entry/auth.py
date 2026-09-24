@@ -14,7 +14,7 @@ from zain_hackathon_entry.db.quries import (
     create_access_token,
     delete_user,
     get_token,
-    get_user_by_card_number,
+    get_user_by_card_token,
     get_user_by_name,
     revoke_access_token,
 )
@@ -58,8 +58,8 @@ async def verify_unqiue_username(session: AsyncSession, username: str) -> None:
         )
 
 
-async def verify_unique_card_number(session: AsyncSession, card_number: int) -> None:
-    user = await get_user_by_card_number(session, card_number)
+async def verify_unique_card_token(session: AsyncSession, card_token: str) -> None:
+    user = await get_user_by_card_token(session, card_token)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -76,7 +76,7 @@ async def sign_up(
     creds: SignUpRequest, session: Annotated[AsyncSession, Depends(get_session)]
 ):
     await verify_unqiue_username(session, creds.username)
-    await verify_unique_card_number(session, creds.card_number)
+    await verify_unique_card_token(session, creds.card_token)
 
     """
 
@@ -88,14 +88,14 @@ async def sign_up(
 
     password_hash = hash_password(creds.password)
 
-    user = await add_user(session, creds.username, password_hash, creds.card_number)
+    user = await add_user(session, creds.username, password_hash, creds.card_token)
     return await create_access_token(session, user)
 
 
 @router.post(
     "/api/log_in",
     response_model=AccessTokenResponse,
-    status_code=status.HTTP_202_ACCEPTED,
+    status_code=status.HTTP_200_OK,
 )
 async def log_in(
     creds: LogInRequest, session: Annotated[AsyncSession, Depends(get_session)]

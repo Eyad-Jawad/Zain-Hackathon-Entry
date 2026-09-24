@@ -1,40 +1,17 @@
 from datetime import datetime
-from typing import Annotated, Self
+from typing import Self
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
-
-
-def luhn_validation(number: int) -> int:
-    num = [int(n) for n in str(number)]
-
-    if not (12 <= len(num) <= 19):
-        raise ValueError("Invalid card number, please check again.")
-
-    sum = 0
-    for i in range(len(num)):
-        offset_from_end = len(num) - i
-
-        if offset_from_end % 2 == 1:
-            sum += num[i]
-        elif num[i] < 5:
-            sum += num[i] * 2
-        else:
-            sum += num[i] * 2 - 9
-
-    if sum % 10 != 0:
-        raise ValueError("Invalid card number, please check again.")
-
-    return number
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class UserRequest(BaseModel):
     id: int | None
     name: str | None
-    card_number: None | Annotated[int, AfterValidator(luhn_validation)]
+    card_token: str | None
 
     @model_validator(mode="after")
     def is_all_none(self) -> Self:
-        if not self.id and not self.name and not self.card_number:
+        if not self.id and not self.name and not self.card_token:
             raise ValueError(
                 "All values are None. You have to provide at least one value"
             )
@@ -47,7 +24,7 @@ class UserResponse(BaseModel):
 
     id: int
     name: str
-    card_number: Annotated[int, AfterValidator(luhn_validation)]
+    card_token: str
 
 
 class BaseTransaction(BaseModel):
@@ -68,8 +45,8 @@ class TransactionResponse(BaseTransaction):
 
 
 class BaseAuth(BaseModel):
-    username: str = Field(min_length=1, max_length=16)
-    password: str = Field(min_length=1, max_length=128)
+    username: str = Field(min_length=3, max_length=16)
+    password: str = Field(min_length=8, max_length=128)
 
 
 class LogInRequest(BaseAuth):
@@ -81,8 +58,7 @@ class DeleteAccountRequest(BaseAuth):
 
 
 class SignUpRequest(BaseAuth):
-    card_number: Annotated[int, AfterValidator(luhn_validation)]
-    pin_code: int
+    card_token: str
 
 
 class AccessTokenResponse(BaseModel):
