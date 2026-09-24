@@ -21,6 +21,11 @@ class TransactionResponse(BaseTransaction):
     date: datetime
 
 
+class RequestResponse(BaseModel):
+    message: str
+    request: TransactionResponse
+    
+
 def username_validator(username: str) -> str:
     if not (2 < len(username) < 17):
         raise ValueError(

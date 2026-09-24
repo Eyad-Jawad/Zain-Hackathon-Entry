@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from zain_hackathon_entry.auth import get_current_user
@@ -17,19 +17,19 @@ from zain_hackathon_entry.db.quries import (
     transfer_balance,
 )
 from zain_hackathon_entry.error_strings import Errors
-from zain_hackathon_entry.schemas import TransactionReqeust, TransactionResponse
+from zain_hackathon_entry.schemas import TransactionReqeust, RequestResponse
 
 router = APIRouter()
 
 
 @router.post(
     "/api/transfer/make_request",
-    response_model=TransactionResponse,
+    response_model=RequestResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def make_request(
-    session: Annotated[AsyncSession, get_session],
-    user: Annotated[User, get_current_user],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)],
     transaction: TransactionReqeust,
 ):
     if user.balance < transaction.amount:
@@ -62,25 +62,22 @@ async def make_request(
 
     await add_pending_transaction(session, new_transaction)
 
-    return {
-        "message": Errors.CONFIRMATION_NEEDED,
-        "pending_request": new_transaction,
-    }
+    return RequestResponse(message=Errors.CONFIRMATION_NEEDED, request=new_transaction)
 
 
 @router.post(
     "/api/transfer/confirm_request/{id}",
-    response_model=TransactionResponse,
+    response_model=RequestResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def confirm_transfer_request(
-    session: Annotated[AsyncSession, get_session],
-    user: Annotated[User, get_current_user],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)],
     id: int,
 ):
     request = await get_pending_request(session, id)
 
-    if request is None or request.request_id != user.id:
+    if request is None or request.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     if datetime.now() - request.date > timedelta(days=1):
@@ -112,4 +109,4 @@ async def confirm_transfer_request(
 
     await delete_pending_reqest(session, request)
 
-    return transaction
+    return RequestResponse(message="Transaction confirmed.", request=transaction)

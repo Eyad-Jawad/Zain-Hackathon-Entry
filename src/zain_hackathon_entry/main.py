@@ -1,6 +1,5 @@
 # TODO: Make get_users_by_name use fuzzy search
-# TODO: make the errors enum
-# TODO: Make logging in logic
+# TODO: Make get users/acquaintances code/api
 # TODO: Put utc back in auth token validation, and confirmation
 
 from contextlib import asynccontextmanager
