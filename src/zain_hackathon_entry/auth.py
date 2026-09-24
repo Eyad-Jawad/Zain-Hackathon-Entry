@@ -65,6 +65,14 @@ async def sign_up(creds: SignUpRequest, session: Annotated[AsyncSession, Depends
     await verify_unqiue_username(session, creds.username)
     await verify_unique_card_number(session, creds.card_number)
 
+    """
+
+    Some kind of card verfication using the pin code should go
+    in here, but since it's outside the scope of this project
+    as of now, we'll skip adding any boilprete.
+
+    """
+
     password_hash = hash_password(creds.password)
 
     user = await add_user(session, creds.username, password_hash, creds.card_number)

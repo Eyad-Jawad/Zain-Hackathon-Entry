@@ -48,21 +48,3 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(auth.router, tags=["auth"])
 
 
-# @app.post("/api/pay")
-# async def payment_method(
-#     request: Request, 
-#     user: UserRequest, 
-#     session: Annotated[AsyncSession, Depends(get_session)]
-# ):
-#     if user.id:
-#         users = get_users_by_id(session, user.id)
-#     elif user.card_number:
-#         users = get_users_by_card_number(session, user.card_number)
-#     else:
-#         users = get_users_by_name(session, user.name)
-
-#     if len(users) == 0 and user.card_number is None:
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={
-#             "error": Errors.THERE_IS_NO_USER,
-#             "data": "Ask the user for data about this person so we can add it to the database."
-#         })
