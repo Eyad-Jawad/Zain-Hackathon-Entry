@@ -1,4 +1,5 @@
-from .models.users import User
+from .models import User, AccessToken
+from zain_hackathon_entry.schemas import UserRequest, SignUpRequest, AccessTokenResponse
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,16 +11,64 @@ async def get_users(session: AsyncSession) -> list[User]:
 
     return list(result.scalars().all())
 
-async def get_users_by_name(session: AsyncSession, name: str) -> list[User]:
+
+async def get_user_by_id(session: AsyncSession, id: int) -> User | None:
     result = await session.execute(
-        select(User).where(User.name == name)
+        select(User).where(User.id == id)
     )
 
-    return list(result.scalars().all())
+    return result.scalar_one_or_none()
 
-async def get_users_by_card_number(session: AsyncSession, card_number: int) -> list[User]:
+
+async def get_user_by_name(session: AsyncSession, name: str) -> User | None:
+    result = await session.execute(
+        select(User).where(User.username == name)
+    )
+
+    return result.scalar_one_or_none()
+
+async def get_user_by_card_number(session: AsyncSession, card_number: int) -> User | None:
     result = await session.execute(
         select(User).where(User.card_number == card_number)
     )
 
-    return list(result.scalars().all())
+    return result.scalar_one_or_none()
+
+async def add_user(session: AsyncSession, username: str, password_hash: str, card_number: int) -> User:
+    user = User(
+        username=username,
+        password_hash=password_hash,
+        card_number=card_number,
+    )
+
+    session.add(user)
+    await session.flush()
+
+    return user
+
+async def create_access_token(session: AsyncSession, user: User) -> AccessTokenResponse:
+    access_token = AccessToken(user=user)
+    session.add(access_token)
+    await session.flush()
+
+    return {
+        "access_token": access_token.token,
+        "exp": access_token.expiration_date,
+    }
+
+async def get_token(session: AsyncSession, token: str) -> AccessToken | None:
+    result = await session.execute(
+        select(AccessToken).where(
+            AccessToken.token == token
+        )
+    )
+
+    return result.scalar_one_or_none()
+
+async def revoke_access_token(session: AsyncSession, access_token: str) -> None:
+    await session.delete(access_token)
+    await session.flush()
+
+async def delete_user(session: AsyncSession, user: User):
+    await session.delete(user)
+    await session.flush()

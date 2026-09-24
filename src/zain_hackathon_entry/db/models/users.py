@@ -17,21 +17,21 @@ class User(Base):
 
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     password_hash: Mapped[str]
-    tokens: Mapped[AccessToken] = relationship(
+    tokens: Mapped[list["AccessToken"]] = relationship(
         back_populates="user", 
         cascade="all, delete"
     )
 
     card_number: Mapped[int] = mapped_column(unique=True, nullable=False, index=True)
-    acquaintances: Mapped[list[Acquaintance]] = relationship(
+    acquaintances: Mapped[list["Acquaintance"]] = relationship(
         back_populates="user", 
         cascade="all, delete"
     )
-    transactions: Mapped[list[Transaction]] = relationship(
+    transactions: Mapped[list["Transaction"]] = relationship(
         back_populates="user", 
         cascade="all, delete"
     )
-    pending_requests: Mapped[list[PendingRequest]] = relationship(
+    pending_requests: Mapped[list["PendingRequest"]] = relationship(
         back_populates="user", 
         cascade="all, delete"
     )

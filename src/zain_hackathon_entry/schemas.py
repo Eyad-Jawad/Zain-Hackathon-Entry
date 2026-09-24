@@ -2,7 +2,7 @@ from datetime import datetime
 from typing_extensions import Self
 from typing import Annotated
 
-from pydantic import BaseModel, AfterValidator, ConfigDict, model_validator
+from pydantic import BaseModel, AfterValidator, ConfigDict, model_validator, Field
 
 
 def luhn_validation(number: int) -> bool:
@@ -68,3 +68,22 @@ class TransactionResponse(BaseTransaction):
     id: int
     date: datetime
 
+class BaseAuth(BaseModel):
+    username: str = Field(min_length=1, max_length=16)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class LogInRequest(BaseAuth):
+    pass
+
+class DeleteAccountRequest(BaseAuth):
+    pass
+
+class SignUpRequest(BaseAuth):
+    card_number: Annotated[int, AfterValidator(luhn_validation)]
+    pin_code: int
+
+
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    exp: datetime

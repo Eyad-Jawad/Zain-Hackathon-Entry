@@ -12,7 +12,7 @@ class Acquaintance(Base):
     __tablename__ = "acquaintances"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user: Mapped[User] = relationship(back_populates="acquaintances")
+    user: Mapped["User"] = relationship(back_populates="acquaintances")
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     acquaintance_name: Mapped[str | None]
     acquaintance_card_number: Mapped[int]

@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "aiosqlite>=0.22.1",
+    "argon2-cffi>=25.1.0",
     "fastapi[standard]>=0.141.1",
     "sqlalchemy>=2.0.54",
 ]
@@ -16,3 +17,6 @@ dependencies = [
 [build-system]
 requires = ["uv_build>=0.12.10,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.fastapi]
+entrypoint = "zain_hackathon_entry.main:app"
