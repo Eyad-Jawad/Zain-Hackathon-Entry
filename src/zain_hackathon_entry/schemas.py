@@ -1,35 +1,11 @@
+from typing import Annotated
 from datetime import datetime
-from typing import Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-
-
-class UserRequest(BaseModel):
-    id: int | None
-    name: str | None
-    card_token: str | None
-
-    @model_validator(mode="after")
-    def is_all_none(self) -> Self:
-        if not self.id and not self.name and not self.card_token:
-            raise ValueError(
-                "All values are None. You have to provide at least one value"
-            )
-
-        return self
-
-
-class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    card_token: str
+from pydantic import BaseModel, ConfigDict, Field, AfterValidator
 
 
 class BaseTransaction(BaseModel):
     amount: int
-    sender_id: int
     receiver_id: int
 
 
@@ -41,11 +17,28 @@ class TransactionResponse(BaseTransaction):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    sender_id: int
     date: datetime
 
 
+def username_validator(username: str) -> str:
+    if not (2 < len(username) < 17):
+        raise ValueError("Username length must be less than 17 and more than 2 characters.")
+
+    if not username.isascii():
+        raise ValueError("Username must containt ASCII characters only.")
+    
+    if " " in username:
+        raise ValueError("Username must not containt spaces.")
+
+    if username[0].isalpha():
+        raise ValueError("Username must start with a character.")
+
+    return username
+
+
 class BaseAuth(BaseModel):
-    username: str = Field(min_length=3, max_length=16)
+    username: Annotated[str, AfterValidator(username_validator)]
     password: str = Field(min_length=8, max_length=128)
 
 
