@@ -78,6 +78,12 @@ class UserResponse(BaseUser):
     id: int
 
 
+class UserOwnProfile(UserResponse):
+    model_config = ConfigDict(from_attributes=True)
+    
+    balance: int
+
+
 class BaseAcquaintance(BaseModel):
     acquaintance_name: str = Field(min_length=1, max_length=200)
     notes_on_acquaintance: str = Field(max_length=4096)

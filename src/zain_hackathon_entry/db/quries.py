@@ -110,6 +110,11 @@ async def get_pending_request(session: AsyncSession, id: int) -> PendingRequest 
     return result.scalar_one_or_none()
 
 
+async def delete_pending_transaction(session: AsyncSession, pending_transaction: PendingRequest) -> None:
+    await session.delete(pending_transaction)
+    await session.refresh()
+
+
 async def get_transaction(session: AsyncSession, id: int) -> Transaction | None:
     result = await session.execute(select(Transaction).where(Transaction.id == id))
 

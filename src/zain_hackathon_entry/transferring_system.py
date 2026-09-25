@@ -16,6 +16,7 @@ from zain_hackathon_entry.db.quries import (
     get_acquaintance_by_name,
     get_acquaintances,
     get_pending_request,
+    delete_pending_transaction,
     get_transaction,
     get_user_by_id,
     get_user_by_name,
@@ -29,6 +30,7 @@ from zain_hackathon_entry.schemas import (
     TransactionReqeust,
     TransactionResponse,
     UserResponse,
+    UserOwnProfile,
 )
 
 router = APIRouter()
@@ -128,6 +130,36 @@ async def confirm_transfer_request(
         message="Transaction confirmed.",
         request=TransactionResponse.model_validate(transaction),
     )
+
+
+@router.delete(
+    "/api/transfer/confirm_request/{id}",
+    status_code=status.HTTP_200_OK,
+)
+async def delete_pending_request(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)],
+    id: int,
+):
+    request = await get_pending_request(session, id)
+
+    if request is None or request.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    
+    await delete_pending_transaction(session, request)
+
+    return {"request_deleted": True}
+
+
+@router.get(
+    "/api/users/me",
+    response_model=UserOwnProfile,
+    status_code=status.HTTP_200_OK,
+)
+async def api_get_user_by_id(
+    user: Annotated[User, Depends(get_current_user)],
+):
+    return user
 
 
 @router.get(
