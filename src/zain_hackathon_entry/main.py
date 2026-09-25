@@ -1,7 +1,8 @@
-# TODO: Make get_users_by_name use fuzzy search
+# TODO: Make get_by_name use fuzzy search
 # TODO: Put utc back in auth token validation, and confirmation
 # TODO: Get my profile api/code
 # TODO: Document or make how ids are used cleaer
+# TODO: Add more error strings
 
 from contextlib import asynccontextmanager
 
