@@ -1,28 +1,35 @@
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from zain_hackathon_entry.auth import get_current_user
 from zain_hackathon_entry.db import get_session
 from zain_hackathon_entry.db.models import User
 from zain_hackathon_entry.db.quries import (
+    add_acquaintance,
     add_pending_transaction,
     add_transaction,
     delete_pending_reqest,
+    get_acquaintance_by_id,
+    get_acquaintance_by_name,
+    get_acquaintances,
     get_pending_request,
     get_transaction,
     get_user_by_id,
     get_user_by_name,
-    get_acquaintance_by_id,
-    get_acquaintance_by_name,
-    get_acquaintances,
-    add_acquaintance,
     transfer_balance,
 )
 from zain_hackathon_entry.error_strings import Errors
-from zain_hackathon_entry.schemas import TransactionReqeust, RequestResponse, UserResponse, AcquaintanceResponse, AcquaintanceRequest
+from zain_hackathon_entry.schemas import (
+    AcquaintanceRequest,
+    AcquaintanceResponse,
+    RequestResponse,
+    TransactionReqeust,
+    TransactionResponse,
+    UserResponse,
+)
 
 router = APIRouter()
 
@@ -40,7 +47,7 @@ async def make_request(
     if user.id == transaction.receiver_id:
         raise HTTPException(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-            detail="You can't transfer to yourself."
+            detail="You can't transfer to yourself.",
         )
 
     if user.balance < transaction.amount:
@@ -73,7 +80,10 @@ async def make_request(
 
     await add_pending_transaction(session, new_transaction)
 
-    return RequestResponse(message=Errors.CONFIRMATION_NEEDED, request=new_transaction)
+    return RequestResponse(
+        message=Errors.CONFIRMATION_NEEDED,
+        request=TransactionResponse.model_validate(new_transaction),
+    )
 
 
 @router.post(
@@ -114,7 +124,10 @@ async def confirm_transfer_request(
 
     await delete_pending_reqest(session, request)
 
-    return RequestResponse(message="Transaction confirmed.", request=transaction)
+    return RequestResponse(
+        message="Transaction confirmed.",
+        request=TransactionResponse.model_validate(transaction),
+    )
 
 
 @router.get(
@@ -131,8 +144,7 @@ async def api_get_user_by_id(
 
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found."
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
     return user
@@ -152,8 +164,7 @@ async def api_get_user_by_username(
 
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found."
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
         )
 
     return user
@@ -167,14 +178,13 @@ async def api_get_user_by_username(
 async def api_get_acquaintace_by_id(
     session: Annotated[AsyncSession, Depends(get_session)],
     user: Annotated[User, Depends(get_current_user)],
-    id: int
+    id: int,
 ):
     acquaintance = await get_acquaintance_by_id(session, id, user.id)
 
     if acquaintance is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Acquaintance not found."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Acquaintance not found."
         )
 
     return acquaintance
@@ -188,14 +198,13 @@ async def api_get_acquaintace_by_id(
 async def api_get_acquaintace_by_name(
     session: Annotated[AsyncSession, Depends(get_session)],
     user: Annotated[User, Depends(get_current_user)],
-    name: str
+    name: str,
 ):
     acquaintance = await get_acquaintance_by_name(session, name, user.id)
 
     if acquaintance is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Acquaintance not found."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Acquaintance not found."
         )
 
     return acquaintance
@@ -212,10 +221,10 @@ async def api_get_acquaintaces(
 ):
     acquaintances = await get_acquaintances(session, user.id)
 
-    if acquaintances is []:
+    if acquaintances == []:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Acquaintances not found. Please add any."
+            detail="Acquaintances not found. Please add any.",
         )
 
     return acquaintances
@@ -236,9 +245,15 @@ async def api_add_acquaintace(
     if acquaintance is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found, please check the username again."
+            detail="User not found, please check the username again.",
         )
 
-    new_acquaintance = await add_acquaintance(session, user, acquaintance, request.acquaintance_name, request.notes_on_acquaintance)
+    new_acquaintance = await add_acquaintance(
+        session,
+        user,
+        acquaintance,
+        request.acquaintance_name,
+        request.notes_on_acquaintance,
+    )
 
     return new_acquaintance

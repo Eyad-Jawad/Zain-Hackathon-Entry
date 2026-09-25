@@ -3,7 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from zain_hackathon_entry.schemas import AccessTokenResponse
 
-from .models import AccessToken, PendingRequest, Transaction, User, Acquaintance, UserRelationship
+from .models import (
+    AccessToken,
+    Acquaintance,
+    PendingRequest,
+    Transaction,
+    User,
+    UserRelationship,
+)
 
 
 async def get_users(session: AsyncSession) -> list[User]:
@@ -125,27 +132,30 @@ async def delete_pending_reqest(
     await session.flush()
 
 
-
-async def get_acquaintance_by_id(session: AsyncSession, id: int, user_id: int) -> Acquaintance | None:
+async def get_acquaintance_by_id(
+    session: AsyncSession, id: int, user_id: int
+) -> Acquaintance | None:
     result = await session.execute(
         select(Acquaintance)
         .join(UserRelationship, UserRelationship.acquaintance_id == Acquaintance.id)
         .where(
             UserRelationship.user_id == user_id,
-            Acquaintance.id == id, 
+            Acquaintance.id == id,
         )
     )
 
     return result.scalar_one_or_none()
 
 
-async def get_acquaintance_by_name(session: AsyncSession, name: str, user_id: int) -> Acquaintance | None:
+async def get_acquaintance_by_name(
+    session: AsyncSession, name: str, user_id: int
+) -> Acquaintance | None:
     result = await session.execute(
         select(Acquaintance)
         .join(UserRelationship, UserRelationship.acquaintance_id == Acquaintance.id)
         .where(
             UserRelationship.user_id == user_id,
-            Acquaintance.acquaintance_name == name, 
+            Acquaintance.acquaintance_name == name,
         )
     )
 
@@ -163,18 +173,21 @@ async def get_acquaintances(session: AsyncSession, user_id: int) -> list[Acquain
 
     if acquaintances is None:
         return []
-    
+
     return list(acquaintances)
 
-async def add_acquaintance(session: AsyncSession, user: User, acquaintance: User, name: str, notes: str) -> Acquaintance:
+
+async def add_acquaintance(
+    session: AsyncSession, user: User, acquaintance: User, name: str, notes: str
+) -> Acquaintance:
     new_acquaintance = Acquaintance(acquaintance_name=name, notes_on_acquaintance=notes)
     session.add(new_acquaintance)
     await session.flush()
 
     relationship = UserRelationship(
-        user_id=user.id, 
-        acquaintance_id=acquaintance.id, 
-        mapped_acquaintance_id=new_acquaintance.id
+        user_id=user.id,
+        acquaintance_id=acquaintance.id,
+        mapped_acquaintance_id=new_acquaintance.id,
     )
 
     session.add(relationship)

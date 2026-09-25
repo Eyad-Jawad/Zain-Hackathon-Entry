@@ -24,7 +24,7 @@ class TransactionResponse(BaseTransaction):
 class RequestResponse(BaseModel):
     message: str
     request: TransactionResponse
-    
+
 
 def username_validator(username: str) -> str:
     if not (2 < len(username) < 17):
@@ -86,8 +86,8 @@ class BaseAcquaintance(BaseModel):
 class AcquaintanceRequest(BaseAcquaintance):
     username: str
 
+
 class AcquaintanceResponse(BaseAcquaintance):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-

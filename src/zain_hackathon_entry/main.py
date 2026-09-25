@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from zain_hackathon_entry import auth, transferring_system
 from zain_hackathon_entry.db import init_db
 
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     engine = await init_db()

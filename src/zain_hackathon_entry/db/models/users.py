@@ -6,7 +6,6 @@ from .. import Base
 
 if TYPE_CHECKING:
     from .access_tokens import AccessToken
-    from .acquaintances import Acquaintance
     from .pendings_requests import PendingRequest
     from .transactions import Transaction
 

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .. import Base
 
+
 class Acquaintance(Base):
     __tablename__ = "acquaintances"
 

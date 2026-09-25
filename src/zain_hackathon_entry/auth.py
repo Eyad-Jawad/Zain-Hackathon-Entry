@@ -54,7 +54,7 @@ async def get_current_user(
     access_token = await validate_and_get_token(session, token)
 
     await session.refresh(access_token, ["user"])
-    
+
     return access_token.user
 
 
