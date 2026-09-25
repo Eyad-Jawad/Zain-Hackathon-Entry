@@ -38,7 +38,7 @@ def username_validator(username: str) -> str:
     if " " in username:
         raise ValueError("Username must not containt spaces.")
 
-    if username[0].isalpha():
+    if not username[0].isalpha():
         raise ValueError("Username must start with a character.")
 
     return username
@@ -58,9 +58,36 @@ class DeleteAccountRequest(BaseAuth):
 
 
 class SignUpRequest(BaseAuth):
-    card_token: str
+    card_token: str = Field(max_length=1024)
 
 
 class AccessTokenResponse(BaseModel):
     access_token: str
     exp: datetime
+
+
+class BaseUser(BaseModel):
+    username: str
+
+
+class UserRequest(BaseUser):
+    pass
+
+
+class UserResponse(BaseUser):
+    id: int
+
+
+class BaseAcquaintance(BaseModel):
+    acquaintance_name: str = Field(min_length=1, max_length=200)
+    notes_on_acquaintance: str = Field(max_length=4096)
+
+
+class AcquaintanceRequest(BaseAcquaintance):
+    username: str
+
+class AcquaintanceResponse(BaseAcquaintance):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+

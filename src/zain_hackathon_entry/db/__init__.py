@@ -9,7 +9,7 @@ class Base(DeclarativeBase):
     pass
 
 
-db_dir = Path(__file__).resolve().parent
+db_dir = Path(__file__).resolve().parents[3]
 db_path = db_dir / "app.db"
 db_url = f"sqlite+aiosqlite:///{db_path}"
 

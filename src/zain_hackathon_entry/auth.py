@@ -27,7 +27,7 @@ from zain_hackathon_entry.schemas import (
 
 router = APIRouter()
 ph = PasswordHasher()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/log_in")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/sign_up")
 
 
 async def validate_and_get_token(session: AsyncSession, token: str) -> AccessToken:
@@ -48,11 +48,13 @@ async def validate_and_get_token(session: AsyncSession, token: str) -> AccessTok
 
 
 async def get_current_user(
-    session: Annotated[AsyncSession, get_session],
-    token: Annotated[str, oauth2_scheme],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    token: Annotated[str, Depends(oauth2_scheme)],
 ) -> User:
     access_token = await validate_and_get_token(session, token)
 
+    await session.refresh(access_token, ["user"])
+    
     return access_token.user
 
 

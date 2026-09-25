@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from zain_hackathon_entry.schemas import AccessTokenResponse
 
-from .models import AccessToken, PendingRequest, Transaction, User
+from .models import AccessToken, PendingRequest, Transaction, User, Acquaintance, UserRelationship
 
 
 async def get_users(session: AsyncSession) -> list[User]:
@@ -74,9 +74,9 @@ async def delete_user(session: AsyncSession, user: User):
 
 
 async def add_transaction(
-    session: AsyncSession, sender: User, reciever: User, amount: int
+    session: AsyncSession, sender: User, receiver: User, amount: int
 ) -> Transaction:
-    transaction = Transaction(sender=sender, reciever=reciever, amount=amount)
+    transaction = Transaction(sender=sender, receiver=receiver, amount=amount)
 
     session.add(transaction)
     await session.flush()
@@ -110,10 +110,10 @@ async def get_transaction(session: AsyncSession, id: int) -> Transaction | None:
 
 
 async def transfer_balance(
-    session: AsyncSession, sender: User, reciever: User, amount
+    session: AsyncSession, sender: User, receiver: User, amount
 ) -> None:
     sender.balance -= amount
-    reciever.balance += amount
+    receiver.balance += amount
 
     await session.flush()
 
@@ -123,3 +123,61 @@ async def delete_pending_reqest(
 ) -> None:
     await session.delete(pending_request)
     await session.flush()
+
+
+
+async def get_acquaintance_by_id(session: AsyncSession, id: int, user_id: int) -> Acquaintance | None:
+    result = await session.execute(
+        select(Acquaintance)
+        .join(UserRelationship, UserRelationship.acquaintance_id == Acquaintance.id)
+        .where(
+            UserRelationship.user_id == user_id,
+            Acquaintance.id == id, 
+        )
+    )
+
+    return result.scalar_one_or_none()
+
+
+async def get_acquaintance_by_name(session: AsyncSession, name: str, user_id: int) -> Acquaintance | None:
+    result = await session.execute(
+        select(Acquaintance)
+        .join(UserRelationship, UserRelationship.acquaintance_id == Acquaintance.id)
+        .where(
+            UserRelationship.user_id == user_id,
+            Acquaintance.acquaintance_name == name, 
+        )
+    )
+
+    return result.scalar_one_or_none()
+
+
+async def get_acquaintances(session: AsyncSession, user_id: int) -> list[Acquaintance]:
+    result = await session.execute(
+        select(Acquaintance)
+        .join(UserRelationship, UserRelationship.acquaintance_id == Acquaintance.id)
+        .where(UserRelationship.user_id == user_id)
+    )
+
+    acquaintances = result.scalars()
+
+    if acquaintances is None:
+        return []
+    
+    return list(acquaintances)
+
+async def add_acquaintance(session: AsyncSession, user: User, acquaintance: User, name: str, notes: str) -> Acquaintance:
+    new_acquaintance = Acquaintance(acquaintance_name=name, notes_on_acquaintance=notes)
+    session.add(new_acquaintance)
+    await session.flush()
+
+    relationship = UserRelationship(
+        user_id=user.id, 
+        acquaintance_id=acquaintance.id, 
+        mapped_acquaintance_id=new_acquaintance.id
+    )
+
+    session.add(relationship)
+    await session.flush()
+
+    return new_acquaintance

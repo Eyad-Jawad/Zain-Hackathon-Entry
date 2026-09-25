@@ -1,6 +1,7 @@
 # TODO: Make get_users_by_name use fuzzy search
-# TODO: Make get users/acquaintances code/api
 # TODO: Put utc back in auth token validation, and confirmation
+# TODO: Get my profile api/code
+# TODO: Document or make how ids are used cleaer
 
 from contextlib import asynccontextmanager
 
@@ -8,7 +9,6 @@ from fastapi import FastAPI
 
 from zain_hackathon_entry import auth, transferring_system
 from zain_hackathon_entry.db import init_db
-
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
