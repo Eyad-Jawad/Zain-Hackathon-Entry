@@ -1,9 +1,9 @@
-# TODO: Make get_by_name use fuzzy search
 # TODO: Put utc back in auth token validation, and confirmation
 # TODO: Document or make how ids are used cleaer
 # TODO: Add more error strings
 # TODO: Add checking similar paymet last day
 # TODO: Add more error strings and things to handle
+# TODO: Maybe bake the ai into the system not the user
 
 from contextlib import asynccontextmanager
 

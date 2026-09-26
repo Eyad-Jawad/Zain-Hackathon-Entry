@@ -19,7 +19,7 @@ from zain_hackathon_entry.db.quries import (
     delete_pending_transaction,
     get_transaction,
     get_user_by_id,
-    get_user_by_name,
+    get_user_by_username,
     transfer_balance,
 )
 from zain_hackathon_entry.error_strings import Errors
@@ -192,7 +192,7 @@ async def api_get_user_by_username(
     _user: Annotated[User, Depends(get_current_user)],
     username: str,
 ):
-    user = await get_user_by_name(session, username)
+    user = await get_user_by_username(session, username)
 
     if user is None:
         raise HTTPException(
@@ -224,7 +224,7 @@ async def api_get_acquaintace_by_id(
 
 @router.get(
     "/api/acquaintances/name/{name}",
-    response_model=AcquaintanceResponse,
+    response_model=list[AcquaintanceResponse],
     status_code=status.HTTP_200_OK,
 )
 async def api_get_acquaintace_by_name(
@@ -234,7 +234,7 @@ async def api_get_acquaintace_by_name(
 ):
     acquaintance = await get_acquaintance_by_name(session, name, user.id)
 
-    if acquaintance is None:
+    if acquaintance is None or len(acquaintance) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Acquaintance not found."
         )
@@ -272,7 +272,7 @@ async def api_add_acquaintace(
     user: Annotated[User, Depends(get_current_user)],
     request: AcquaintanceRequest,
 ):
-    acquaintance = await get_user_by_name(session, request.username)
+    acquaintance = await get_user_by_username(session, request.username)
 
     if acquaintance is None:
         raise HTTPException(

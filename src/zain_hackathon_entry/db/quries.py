@@ -1,5 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from rapidfuzz import fuzz, process
+from heapq import nlargest
 
 from zain_hackathon_entry.schemas import AccessTokenResponse
 
@@ -25,7 +27,7 @@ async def get_user_by_id(session: AsyncSession, id: int) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_name(session: AsyncSession, name: str) -> User | None:
+async def get_user_by_username(session: AsyncSession, name: str) -> User | None:
     result = await session.execute(select(User).where(User.username == name))
 
     return result.scalar_one_or_none()
@@ -154,7 +156,7 @@ async def get_acquaintance_by_id(
 
 async def get_acquaintance_by_name(
     session: AsyncSession, name: str, user_id: int
-) -> Acquaintance | None:
+) -> list[Acquaintance]:
     result = await session.execute(
         select(Acquaintance)
         .join(UserRelationship, UserRelationship.acquaintance_id == Acquaintance.id)
@@ -164,7 +166,33 @@ async def get_acquaintance_by_name(
         )
     )
 
-    return result.scalar_one_or_none()
+    acquaintances = result.scalars().all()
+
+    if len(acquaintances) != 0:
+        return acquaintances
+
+    acquaintances = await get_acquaintances(session, user_id)
+
+    if len(acquaintances) == 0:
+        return []
+
+    fuzz_results = process.extract(
+        query=name,
+        choices=acquaintances,
+        scorer=fuzz.ratio,
+        processor=lambda a: (
+            a.acquaintance_name if isinstance(a, Acquaintance) else a
+        ),
+    )
+
+    return [
+        a[0]
+        for a in nlargest(
+            5,
+            fuzz_results,
+            key=lambda a: a[1],
+        )
+    ]
 
 
 async def get_acquaintances(session: AsyncSession, user_id: int) -> list[Acquaintance]:
@@ -174,10 +202,7 @@ async def get_acquaintances(session: AsyncSession, user_id: int) -> list[Acquain
         .where(UserRelationship.user_id == user_id)
     )
 
-    acquaintances = result.scalars()
-
-    if acquaintances is None:
-        return []
+    acquaintances = result.scalars().all()
 
     return list(acquaintances)
 
@@ -185,14 +210,13 @@ async def get_acquaintances(session: AsyncSession, user_id: int) -> list[Acquain
 async def add_acquaintance(
     session: AsyncSession, user: User, acquaintance: User, name: str, notes: str
 ) -> Acquaintance:
-    new_acquaintance = Acquaintance(acquaintance_name=name, notes_on_acquaintance=notes)
+    new_acquaintance = Acquaintance(id=acquaintance.id, acquaintance_name=name, notes_on_acquaintance=notes)
     session.add(new_acquaintance)
     await session.flush()
 
     relationship = UserRelationship(
         user_id=user.id,
-        acquaintance_id=acquaintance.id,
-        mapped_acquaintance_id=new_acquaintance.id,
+        acquaintance_id=new_acquaintance.id,
     )
 
     session.add(relationship)

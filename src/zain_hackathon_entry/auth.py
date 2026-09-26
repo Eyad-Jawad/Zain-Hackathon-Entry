@@ -15,7 +15,7 @@ from zain_hackathon_entry.db.quries import (
     delete_user,
     get_token,
     get_user_by_card_token,
-    get_user_by_name,
+    get_user_by_username,
     revoke_access_token,
 )
 from zain_hackathon_entry.schemas import (
@@ -59,7 +59,7 @@ async def get_current_user(
 
 
 async def verify_unqiue_username(session: AsyncSession, username: str) -> None:
-    user = await get_user_by_name(session, username)
+    user = await get_user_by_username(session, username)
     if user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -109,7 +109,7 @@ async def sign_up(
 async def log_in(
     creds: LogInRequest, session: Annotated[AsyncSession, Depends(get_session)]
 ):
-    user = await get_user_by_name(session, creds.username)
+    user = await get_user_by_username(session, creds.username)
     if user is None or not verify_password(creds.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -134,7 +134,7 @@ async def log_out(
 async def delete_account(
     creds: DeleteAccountRequest, session: Annotated[AsyncSession, Depends(get_session)]
 ):
-    user = await get_user_by_name(session, creds.username)
+    user = await get_user_by_username(session, creds.username)
     if user is None or not verify_password(creds.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
