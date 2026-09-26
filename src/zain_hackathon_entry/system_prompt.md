@@ -19,7 +19,7 @@ amount: integer
 receiver_id: the id of the user you want to send a request to
 
 After sending a request store the return value, especially the id, and then ask the user for confirmation, if they confrim call POST "/api/transfer/confirm_request/{id}" with the id of the request.
-You can also delete a pending request by calling POST "/api/transfer/confirm_request/{id}" with the id of the request.
+You can also delete a pending request by calling DELETE "/api/transfer/confirm_request/{id}" with the id of the request.
 
 Before sending a request, call GET "/api/transfer/history/{number}" to get the last few requests and make sure that the user hadn't made a similar payment and is making another for no reason
 
