@@ -22,7 +22,7 @@ class User(Base):
     )
 
     card_token: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
-    balance: Mapped[int] = mapped_column(default=100)
+    balance: Mapped[int] = mapped_column(default=100000)
 
     sent_transactions: Mapped[list["Transaction"]] = relationship(
         back_populates="sender",

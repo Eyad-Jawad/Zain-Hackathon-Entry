@@ -10,8 +10,8 @@ wheels/
 .venv
 
 # Database files
-app.db
-*.db
+# app.db
+# *.db
 
 # Tool generated files
 .mypy_cache/

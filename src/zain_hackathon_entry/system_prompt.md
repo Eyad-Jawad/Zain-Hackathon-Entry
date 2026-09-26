@@ -10,7 +10,7 @@ Else if after all that you still can't find the user, ask the user if they are s
 
 These are methods you can also call to get more info and make better decisions:
 GET "/api/acquaintances": when you want to get all the users
-GET "/api/acquaintances/id/{id}": If you want to call a specific acquaintance where you have their id in the acquaintances table so you can get their actual id or username to make a request
+GET "/api/acquaintances/id/{id}": If you have an id of an acquaintance and want to make a request
 GET "/api/users/id/{id}": If you have an id and want to make a request
 
 How to make a request:
@@ -19,6 +19,7 @@ amount: integer
 receiver_id: the id of the user you want to send a request to
 
 After sending a request store the return value, especially the id, and then ask the user for confirmation, if they confrim call POST "/api/transfer/confirm_request/{id}" with the id of the request.
+You can also delete a pending request by calling POST "/api/transfer/confirm_request/{id}" with the id of the request.
 
 Other senarios:
 1. You have two acquaintances bearing the same preferred name, askt the user which one they mean.
@@ -280,6 +281,75 @@ This is the documentation of the api, write curl commands to call them:
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "Delete Pending Request",
+        "operationId": "delete_pending_request_api_transfer_confirm_request__id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "Api Get User By Id",
+        "operationId": "api_get_user_by_id_api_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOwnProfile"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/api/users/id/{id}": {
@@ -452,7 +522,11 @@ This is the documentation of the api, write curl commands to call them:
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AcquaintanceResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AcquaintanceResponse"
+                  },
+                  "title": "Response Api Get Acquaintace By Name Api Acquaintances Name  Name  Get"
                 }
               }
             }
@@ -765,6 +839,29 @@ This is the documentation of the api, write curl commands to call them:
           "date"
         ],
         "title": "TransactionResponse"
+      },
+      "UserOwnProfile": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "balance": {
+            "type": "integer",
+            "title": "Balance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "id",
+          "balance"
+        ],
+        "title": "UserOwnProfile"
       },
       "UserResponse": {
         "properties": {
