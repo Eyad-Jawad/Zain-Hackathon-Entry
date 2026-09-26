@@ -80,7 +80,7 @@ class UserResponse(BaseUser):
 
 class UserOwnProfile(UserResponse):
     model_config = ConfigDict(from_attributes=True)
-    
+
     balance: int
 
 

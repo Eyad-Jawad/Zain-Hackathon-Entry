@@ -12,6 +12,4 @@ class UserRelationship(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     acquaintance_id: Mapped[int] = mapped_column(ForeignKey("acquaintances.id"))
 
-    __table_args__ = (
-        UniqueConstraint("user_id", "acquaintance_id"),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "acquaintance_id"),)

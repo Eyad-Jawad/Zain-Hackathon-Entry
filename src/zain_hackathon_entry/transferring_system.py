@@ -12,15 +12,15 @@ from zain_hackathon_entry.db.quries import (
     add_pending_transaction,
     add_transaction,
     delete_pending_reqest,
+    delete_pending_transaction,
     get_acquaintance_by_id,
     get_acquaintance_by_name,
     get_acquaintances,
     get_pending_request,
-    delete_pending_transaction,
     get_transaction,
-    get_user_transactions,
     get_user_by_id,
     get_user_by_username,
+    get_user_transactions,
     transfer_balance,
 )
 from zain_hackathon_entry.error_strings import Errors
@@ -30,8 +30,8 @@ from zain_hackathon_entry.schemas import (
     RequestResponse,
     TransactionReqeust,
     TransactionResponse,
-    UserResponse,
     UserOwnProfile,
+    UserResponse,
 )
 
 router = APIRouter()
@@ -99,7 +99,7 @@ async def get_request_history(
     user: Annotated[User, Depends(get_current_user)],
     number: int,
 ):
-    return await get_user_transactions(session, user.id)[:number]
+    return (await get_user_transactions(session, user.id))[:number]
 
 
 @router.post(
@@ -159,7 +159,7 @@ async def delete_pending_request(
 
     if request is None or request.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    
+
     await delete_pending_transaction(session, request)
 
     return {"request_deleted": True}
@@ -170,7 +170,7 @@ async def delete_pending_request(
     response_model=UserOwnProfile,
     status_code=status.HTTP_200_OK,
 )
-async def api_get_user_by_id(
+async def api_get_users_own_profile(
     user: Annotated[User, Depends(get_current_user)],
 ):
     return user

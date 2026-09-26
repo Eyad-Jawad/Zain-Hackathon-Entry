@@ -9,5 +9,5 @@ class Acquaintance(Base):
 
     id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
 
-    acquaintance_name: Mapped[str | None]
+    acquaintance_name: Mapped[str]
     notes_on_acquaintance: Mapped[str | None]

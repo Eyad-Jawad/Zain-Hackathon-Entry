@@ -1,7 +1,8 @@
+from heapq import nlargest
+
+from rapidfuzz import fuzz, process
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from rapidfuzz import fuzz, process
-from heapq import nlargest
 
 from zain_hackathon_entry.schemas import AccessTokenResponse
 
@@ -112,9 +113,10 @@ async def get_pending_request(session: AsyncSession, id: int) -> PendingRequest 
     return result.scalar_one_or_none()
 
 
-async def delete_pending_transaction(session: AsyncSession, pending_transaction: PendingRequest) -> None:
+async def delete_pending_transaction(
+    session: AsyncSession, pending_transaction: PendingRequest
+) -> None:
     await session.delete(pending_transaction)
-    await session.refresh()
 
 
 async def get_transaction(session: AsyncSession, id: int) -> Transaction | None:
@@ -123,10 +125,11 @@ async def get_transaction(session: AsyncSession, id: int) -> Transaction | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_transactions(session: AsyncSession, user_id: int) -> list[Transaction]:
+async def get_user_transactions(
+    session: AsyncSession, user_id: int
+) -> list[Transaction]:
     result = await session.execute(
-        select(Transaction)
-        .where(Transaction.sender_id == user_id)
+        select(Transaction).where(Transaction.sender_id == user_id)
     )
 
     return list(result.scalars().all())
@@ -175,7 +178,7 @@ async def get_acquaintance_by_name(
         )
     )
 
-    acquaintances = result.scalars().all()
+    acquaintances = list(result.scalars().all())
 
     if len(acquaintances) != 0:
         return acquaintances
@@ -189,9 +192,7 @@ async def get_acquaintance_by_name(
         query=name,
         choices=acquaintances,
         scorer=fuzz.ratio,
-        processor=lambda a: (
-            a.acquaintance_name if isinstance(a, Acquaintance) else a
-        ),
+        processor=lambda a: a.acquaintance_name if isinstance(a, Acquaintance) else a,
     )
 
     return [
@@ -219,7 +220,9 @@ async def get_acquaintances(session: AsyncSession, user_id: int) -> list[Acquain
 async def add_acquaintance(
     session: AsyncSession, user: User, acquaintance: User, name: str, notes: str
 ) -> Acquaintance:
-    new_acquaintance = Acquaintance(id=acquaintance.id, acquaintance_name=name, notes_on_acquaintance=notes)
+    new_acquaintance = Acquaintance(
+        id=acquaintance.id, acquaintance_name=name, notes_on_acquaintance=notes
+    )
     session.add(new_acquaintance)
     await session.flush()
 
