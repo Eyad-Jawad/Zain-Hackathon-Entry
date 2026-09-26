@@ -18,6 +18,7 @@ from zain_hackathon_entry.db.quries import (
     get_pending_request,
     delete_pending_transaction,
     get_transaction,
+    get_user_transactions,
     get_user_by_id,
     get_user_by_username,
     transfer_balance,
@@ -86,6 +87,19 @@ async def make_request(
         message=Errors.CONFIRMATION_NEEDED,
         request=TransactionResponse.model_validate(new_transaction),
     )
+
+
+@router.get(
+    "/api/transfer/history/{number}",
+    response_model=list[RequestResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def get_request_history(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[User, Depends(get_current_user)],
+    number: int,
+):
+    return await get_user_transactions(session, user.id)[:number]
 
 
 @router.post(

@@ -123,6 +123,15 @@ async def get_transaction(session: AsyncSession, id: int) -> Transaction | None:
     return result.scalar_one_or_none()
 
 
+async def get_user_transactions(session: AsyncSession, user_id: int) -> list[Transaction]:
+    result = await session.execute(
+        select(Transaction)
+        .where(Transaction.sender_id == user_id)
+    )
+
+    return list(result.scalars().all())
+
+
 async def transfer_balance(
     session: AsyncSession, sender: User, receiver: User, amount
 ) -> None:

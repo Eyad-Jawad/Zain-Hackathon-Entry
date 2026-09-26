@@ -21,6 +21,8 @@ receiver_id: the id of the user you want to send a request to
 After sending a request store the return value, especially the id, and then ask the user for confirmation, if they confrim call POST "/api/transfer/confirm_request/{id}" with the id of the request.
 You can also delete a pending request by calling POST "/api/transfer/confirm_request/{id}" with the id of the request.
 
+Before sending a request, call GET "/api/transfer/history/{number}" to get the last few requests and make sure that the user hadn't made a similar payment and is making another for no reason
+
 Other senarios:
 1. You have two acquaintances bearing the same preferred name, askt the user which one they mean.
 2. The user says transfer to X user, without specifing the amount, ask for the amount
@@ -234,6 +236,57 @@ This is the documentation of the api, write curl commands to call them:
             "OAuth2PasswordBearer": []
           }
         ]
+      }
+    },
+    "/api/transfer/history/{number}": {
+      "get": {
+        "tags": [
+          "transfer"
+        ],
+        "summary": "Get Request History",
+        "operationId": "get_request_history_api_transfer_history__number__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RequestResponse"
+                  },
+                  "title": "Response Get Request History Api Transfer History  Number  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/transfer/confirm_request/{id}": {
